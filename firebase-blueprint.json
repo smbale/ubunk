@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "Fighter": {
+      "title": "Fighter",
+      "description": "User profile for the Ubunk app.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "username": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "reputationPoints": { "type": "integer" },
+        "weightClass": { "type": "string" },
+        "record": {
+          "type": "object",
+          "properties": {
+            "wins": { "type": "integer" },
+            "losses": { "type": "integer" },
+            "draws": { "type": "integer" }
+          }
+        },
+        "streak": { "type": "integer" },
+        "lastActive": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "username", "reputationPoints", "weightClass", "record", "streak", "lastActive"]
+    },
+    "Fight": {
+      "title": "Fight",
+      "description": "A myth debunking session.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "mythContent": { "type": "string" },
+        "verdict": { "type": "string" },
+        "category": { "type": "string" },
+        "officialName": { "type": "string" },
+        "taleOfTheTape": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "knockoutPunch": { "type": "string" },
+        "reliabilityScore": { "type": "integer" },
+        "cheers": { "type": "integer" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "username", "mythContent", "verdict", "category", "officialName", "taleOfTheTape", "knockoutPunch", "reliabilityScore", "cheers", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/fighters/{uid}": {
+      "schema": "Fighter",
+      "description": "Collection of user profiles."
+    },
+    "/fights/{fightId}": {
+      "schema": "Fight",
+      "description": "Live feed of all debunked myths."
+    }
+  }
+}

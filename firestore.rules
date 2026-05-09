@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidFighter(data) {
+      return data.keys().hasAll(['uid', 'username', 'reputationPoints', 'weightClass', 'record', 'streak', 'lastActive']) &&
+             data.uid is string &&
+             data.username is string && data.username.size() <= 40 &&
+             data.reputationPoints is int &&
+             data.weightClass is string &&
+             data.record.wins is int &&
+             data.record.losses is int &&
+             data.record.draws is int &&
+             data.streak is int;
+    }
+
+    match /fighters/{uid} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isOwner(uid) && isValidFighter(request.resource.data);
+      allow update: if isOwner(uid) && isValidFighter(request.resource.data) &&
+        request.resource.data.reputationPoints >= resource.data.reputationPoints;
+    }
+
+    function isValidFight(data) {
+      return data.keys().hasAll(['userId', 'username', 'mythContent', 'verdict', 'category', 'officialName', 'taleOfTheTape', 'knockoutPunch', 'reliabilityScore', 'cheers', 'timestamp']) &&
+             data.userId == request.auth.uid &&
+             data.mythContent is string && data.mythContent.size() <= 1000 &&
+             data.officialName is string &&
+             data.taleOfTheTape is list &&
+             data.reliabilityScore is int &&
+             data.cheers is int;
+    }
+
+    match /fights/{fightId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidFight(request.resource.data);
+      allow update: if isSignedIn() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cheers']);
+    }
+    
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}
